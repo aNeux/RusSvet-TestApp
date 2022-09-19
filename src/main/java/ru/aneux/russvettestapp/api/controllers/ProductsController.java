@@ -72,7 +72,7 @@ public class ProductsController {
 	})
 	@PostMapping
 	public ResponseEntity<HttpStatus> createProduct(@io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = "Полное описание создаваемого продукта (поле \"addedAt\" будет проигнорировано)", required = true,
+			description = "Полное описание создаваемого продукта", required = true,
 			content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDetailedDTO.class)))
 			@RequestBody @Valid ProductDetailedDTO productDetailedDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors())
@@ -92,7 +92,7 @@ public class ProductsController {
 	@PutMapping("/{id}")
 	public ResponseEntity<HttpStatus> updateProduct(@Parameter(description = "идентификатор обновляемого продукта", required = true)
 			@PathVariable("id") long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = "Полное описание продукта, включающее как измененные поля, так и все остальные (поле \"addedAt\" будет проигнорировано)",
+			description = "Полное описание продукта, включающее как измененные поля, так и все остальные",
 			required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDetailedDTO.class)))
 			@RequestBody @Valid ProductDetailedDTO productDetailedDTO, BindingResult bindingResult) {
 		if (bindingResult.hasErrors())
@@ -139,10 +139,10 @@ public class ProductsController {
 			@ApiResponse(responseCode = "404", description = "Продукт с указанным идентификатором не был найден", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Произошла внутренняя ошибка сервера", content = @Content)
 	})
-	@PostMapping(value = "/{id}/image", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+	@PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<HttpStatus> uploadProductImage(@Parameter(description = "идентификатор продукта", required = true)
-			@PathVariable("id") long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
-			@RequestParam("image") MultipartFile imageFile) {
+			@PathVariable("id") long id, @Parameter(description = "Изображение, которое нужно установить для указанной категории",
+			required = true) @RequestParam("image") MultipartFile imageFile) {
 		productsService.uploadImage(id, imageFile);
 		return ResponseEntity.ok(HttpStatus.OK);
 	}

@@ -1,9 +1,12 @@
 package ru.aneux.russvettestapp.dto.product;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class ProductDTO {
+	@Schema(accessMode = Schema.AccessMode.READ_ONLY)
 	private final Long id;
 
 	@NotNull(message = "Product name shouldn't be null")

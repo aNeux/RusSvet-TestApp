@@ -90,9 +90,16 @@ public class ProductsService {
 
 		try {
 			Product product = getProduct(id);
-			Image image = new Image(requestContentType, imageFile.getBytes(), imageFile.getSize());
-			image.setProduct(product);
-			product.setImage(image);
+			if (product.getImage() != null) {
+				Image image = product.getImage();
+				image.setContentType(requestContentType);
+				image.setData(imageFile.getBytes());
+				image.setSize(imageFile.getSize());
+			} else {
+				Image image = new Image(requestContentType, imageFile.getBytes(), imageFile.getSize());
+				image.setProduct(product);
+				product.setImage(image);
+			}
 		} catch (IOException e) {
 			throw new ImageUploadException(e);
 		}
