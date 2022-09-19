@@ -14,7 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.aneux.russvettestapp.api.errorshandling.exceptions.ValidationException;
-import ru.aneux.russvettestapp.dto.category.CategoryDetailedDTO;
 import ru.aneux.russvettestapp.dto.product.ProductDTO;
 import ru.aneux.russvettestapp.dto.product.ProductDetailedDTO;
 import ru.aneux.russvettestapp.models.Image;
@@ -38,15 +37,17 @@ public class ProductsController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200",
 					content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductDTO.class))),
+			@ApiResponse(responseCode = "400", description = "Не удалось интерпретировать условия фильтрации", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Произошла внутренняя ошибка сервера", content = @Content)
 	})
 	@GetMapping
 	public List<ProductDTO> getProducts(@Parameter(description = "индекс текущей страницы (отсчет с 0)", required = true) @RequestParam("page") int page,
 			@Parameter(description = "количество продуктов на одной странице", required = true) @RequestParam("perPage") int perPage,
-			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Описание фильтра для поиска соответствующих категорий",
-					content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProductsFilter.class))})
-			@RequestBody(required = false) ProductsFilter productsFilter) {
-		return productsService.getPaginated(page, perPage, productsFilter);
+			@Parameter(description = "фильтр по имени продукта") @RequestParam(value = "name", required = false) String name,
+			@Parameter(description = "фильтр по указанной для продукта категории") @RequestParam(value = "categoryId", required = false) String categoryId,
+			@Parameter(description = "фильтр по цене продукта от (включительно)") @RequestParam(value = "priceFrom", required = false) String priceFrom,
+			@Parameter(description = "фильтр по цене продукта до (включительно)") @RequestParam(value = "priceTo", required = false) String priceTo) {
+		return productsService.getPaginated(page, perPage, ProductsFilter.of(name, categoryId, priceFrom, priceTo));
 	}
 
 	@Operation(summary = "Возвращает подробную информацию о запрашиваемом продукте")
@@ -134,15 +135,13 @@ public class ProductsController {
 	@Operation(summary = "Загружает и устанавливает изображение для указанного продукта")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Изображение было успешно добавлено", content = @Content),
-			@ApiResponse(responseCode = "400", description = "Загружаемый ресурс имеет некорректный media type", content = @Content),
+			@ApiResponse(responseCode = "400", description = "Загружаемый ресурс имеет некорректный content type", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Продукт с указанным идентификатором не был найден", content = @Content),
 			@ApiResponse(responseCode = "500", description = "Произошла внутренняя ошибка сервера", content = @Content)
 	})
-	@PostMapping("/{id}/image")
+	@PostMapping(value = "/{id}/image", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
 	public ResponseEntity<HttpStatus> uploadProductImage(@Parameter(description = "идентификатор продукта", required = true)
-			@PathVariable("id") long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = "Изображение, которое должно быть добавлено к указанному продукту", required = true,
-			content = {@Content(mediaType = MediaType.IMAGE_PNG_VALUE), @Content(mediaType = MediaType.IMAGE_JPEG_VALUE)})
+			@PathVariable("id") long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)
 			@RequestParam("image") MultipartFile imageFile) {
 		productsService.uploadImage(id, imageFile);
 		return ResponseEntity.ok(HttpStatus.OK);

@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
 @OpenAPIDefinition(info = @Info(
 		title = "API каталога товаров",
 		version = "1.0",
@@ -14,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 		contact = @Contact(
 				name = "Павел Тропинов",
 				email = "pavel.tropinov@gmail.com")))
+@SpringBootApplication
 public class RusSvetTestApp {
 	public static void main(String[] args) {
 		SpringApplication.run(RusSvetTestApp.class, args);
